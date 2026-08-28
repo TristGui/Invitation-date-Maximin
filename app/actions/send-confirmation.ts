@@ -2,7 +2,7 @@
 
 import { Resend } from "resend"
 
-const RECIPIENTS = ["maximin.s@hotmail.frcom"]
+const RECIPIENTS = ["challax78@gmail.com"]
 const FROM = "Notre Date <onboarding@resend.dev>"
 
 type SendResult = { ok: true } | { ok: false; error: string }

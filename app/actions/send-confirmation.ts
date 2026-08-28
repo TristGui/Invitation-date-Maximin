@@ -2,27 +2,25 @@
 
 import { Resend } from "resend"
 
-// Envoi limité à cette seule adresse pour le moment.
-// Pour envoyer aux deux, remets : ["trg9638@gmail.com", "emiliee.lux@gmail.com"]
-const RECIPIENTS = ["trg9638@gmail.com"]
+const RECIPIENTS = ["maximin.s@hotmail.frcom"]
 const FROM = "Notre Date <onboarding@resend.dev>"
 
 type SendResult = { ok: true } | { ok: false; error: string }
 
 export async function sendConfirmation(
+  userName: string,
   activityLabel: string,
   dateISO: string,
 ): Promise<SendResult> {
-  if (!activityLabel || !dateISO) {
-    return { ok: false, error: "Activité ou date manquante." }
+  if (!userName || !activityLabel || !dateISO) {
+    return { ok: false, error: "Nom, activité ou date manquante." }
   }
 
   const apiKey = process.env.RESEND_API_KEY
   if (!apiKey) {
     return {
       ok: false,
-      error:
-        "La clé RESEND_API_KEY n'est pas configurée. Ajoute-la dans les réglages du projet pour activer l'envoi des e-mails.",
+      error: "La clé RESEND_API_KEY n'est pas configurée dans les variables d'environnement.",
     }
   }
 
@@ -36,8 +34,10 @@ export async function sendConfirmation(
   const html = `
     <div style="font-family: system-ui, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #fff5f6; border-radius: 16px; color: #4a2530;">
       <h1 style="font-size: 22px; margin: 0 0 8px;">C'est officiel, on a un rendez-vous !</h1>
-      <p style="margin: 0 0 24px; color: #8a5560;">Voici les détails de notre prochain moment ensemble.</p>
+      <p style="margin: 0 0 24px; color: #8a5560;">Voici les détails confirmés par <strong>${userName}</strong>.</p>
       <div style="background: white; border: 1px solid #f3d6db; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+        <p style="margin: 0 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: #b06a78;">Participant(e)</p>
+        <p style="margin: 0 0 16px; font-size: 18px; font-weight: 600;">${userName}</p>
         <p style="margin: 0 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: #b06a78;">Activité</p>
         <p style="margin: 0 0 16px; font-size: 18px; font-weight: 600;">${activityLabel}</p>
         <p style="margin: 0 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: #b06a78;">Date</p>
@@ -53,7 +53,7 @@ export async function sendConfirmation(
     const { error } = await resend.emails.send({
       from: FROM,
       to: RECIPIENTS,
-      subject: `Rendez-vous confirmé : ${activityLabel}`,
+      subject: `Rendez-vous confirmé par ${userName} : ${activityLabel}`,
       html,
     })
 

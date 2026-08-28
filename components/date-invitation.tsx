@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useMemo, useTransition } from "react"
-import { Film, UtensilsCrossed, Trees, Heart, Check, EyeOff, Target, Landmark } from "lucide-react"
+import { Film, UtensilsCrossed, Trees, Heart, Check, EyeOff, Target, Landmark, User } from "lucide-react"
 import { sendConfirmation } from "@/app/actions/send-confirmation"
 
 type Activity = {
@@ -52,6 +52,7 @@ const ACTIVITIES: Activity[] = [
 ]
 
 export function DateInvitation() {
+  const [name, setName] = useState<string>("")
   const [activity, setActivity] = useState<string>("")
   const [date, setDate] = useState<string>("")
   const [submitted, setSubmitted] = useState(false)
@@ -75,12 +76,12 @@ export function DateInvitation() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!activity || !date) return
+    if (!name.trim() || !activity || !date) return
     const label = ACTIVITIES.find((a) => a.id === activity)?.label ?? activity
     setEmailError("")
     setSubmitted(true)
     startTransition(async () => {
-      const result = await sendConfirmation(label, date)
+      const result = await sendConfirmation(name.trim(), label, date)
       if (!result.ok) {
         setEmailError(result.error)
       }
@@ -93,7 +94,9 @@ export function DateInvitation() {
         <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full bg-primary text-primary-foreground">
           <Check className="size-8" aria-hidden="true" />
         </div>
-        <h2 className="font-serif text-3xl font-semibold text-balance text-foreground">C&apos;est un rendez-vous !</h2>
+        <h2 className="font-serif text-3xl font-semibold text-balance text-foreground">
+          C&apos;est un rendez-vous, {name} !
+        </h2>
         <p className="mt-4 text-pretty leading-relaxed text-muted-foreground">
           On se retrouve pour un(e) <span className="font-medium text-primary">{chosen.label.toLowerCase()}</span>
         </p>
@@ -140,11 +143,29 @@ export function DateInvitation() {
           On se fait un date ?
         </h1>
         <p className="mx-auto mt-4 max-w-md text-pretty leading-relaxed text-muted-foreground">
-          Choisis l&apos;activité et le jour qui te conviennent, je m&apos;occupe du reste.
+          Entre ton prénom, choisis l&apos;activité et le jour qui te conviennent, je m&apos;occupe du reste.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="mt-10">
+      <form onSubmit={handleSubmit} className="mt-8">
+        {/* Champ Prénom / Nom */}
+        <div className="mb-8 flex flex-col items-center gap-2">
+          <label htmlFor="name" className="text-sm font-medium text-foreground flex items-center gap-1.5">
+            <User className="size-4 text-primary" aria-hidden="true" />
+            Comment tu t&apos;appelles ?
+          </label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            placeholder="Ton prénom"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            className="w-full max-w-xs rounded-lg border border-input bg-card px-4 py-2.5 text-center text-foreground outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-ring"
+          />
+        </div>
+
         <fieldset>
           <legend className="sr-only">Choisis une activité</legend>
           <div className="grid gap-4 sm:grid-cols-3">
@@ -202,7 +223,7 @@ export function DateInvitation() {
         <div className="mt-10 flex justify-center">
           <button
             type="submit"
-            disabled={!activity || !date}
+            disabled={!name.trim() || !activity || !date}
             className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-base font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Heart className="size-4 fill-current" aria-hidden="true" />

@@ -20,9 +20,9 @@ const ACTIVITIES: Activity[] = [
     icon: <Film className="size-7" aria-hidden="true" />,
   },
   {
-    id: "Baise",
-    label: "Une Baise",
-    description: "Direction le 7eme ciel !",
+    id: "Musée",
+    label: "Un Musée",
+    description: "Flâner devant les œuvres, à deux",
     icon: <Trees className="size-7" aria-hidden="true" />,
   },
   {

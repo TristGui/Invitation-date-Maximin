@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useMemo, useTransition } from "react"
-import { Film, UtensilsCrossed, Trees, Heart, Check, EyeOff, Target, Landmark, User, Clock, Calendar } from "lucide-react"
+import { Film, UtensilsCrossed, Trees, Heart, Check, EyeOff, Target, Landmark, User, Clock, Calendar, XCircle } from "lucide-react"
 import { sendConfirmation } from "@/app/actions/send-confirmation"
 
 type Activity = {
@@ -44,10 +44,10 @@ const ACTIVITIES: Activity[] = [
     icon: <Target className="size-7" aria-hidden="true" />,
   },
   {
-    id: "Musee",
-    label: "Musée",
-    description: "Flâner devant les œuvres, à deux",
-    icon: <Landmark className="size-7" aria-hidden="true" />,
+    id: "No",
+    label: "Non merci",
+    description: "Pas cette fois-ci...",
+    icon: <XCircle className="size-7" aria-hidden="true" />,
   },
 ]
 
@@ -63,9 +63,10 @@ export function DateInvitation() {
   const today = useMemo(() => new Date().toISOString().split("T")[0], [])
 
   const chosen = ACTIVITIES.find((a) => a.id === activity)
+  const isDeclined = activity === "No"
 
   const prettyDate = useMemo(() => {
-    if (!date) return ""
+    if (!date || isDeclined) return ""
     const d = new Date(date + "T00:00:00")
     return d.toLocaleDateString("fr-FR", {
       weekday: "long",
@@ -73,16 +74,26 @@ export function DateInvitation() {
       month: "long",
       year: "numeric",
     })
-  }, [date])
+  }, [date, isDeclined])
+
+  const isValid = useMemo(() => {
+    if (!name.trim() || !activity) return false
+    if (isDeclined) return true
+    return Boolean(date && time)
+  }, [name, activity, isDeclined, date, time])
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!name.trim() || !activity || !date || !time) return
-    const label = ACTIVITIES.find((a) => a.id === activity)?.label ?? activity
+    if (!isValid) return
+
+    const label = chosen?.label ?? activity
+    const finalDate = isDeclined ? "1970-01-01" : date
+    const finalTime = isDeclined ? "00:00" : time
+
     setEmailError("")
     setSubmitted(true)
     startTransition(async () => {
-      const result = await sendConfirmation(name.trim(), label, date, time)
+      const result = await sendConfirmation(name.trim(), label, finalDate, finalTime)
       if (!result.ok) {
         setEmailError(result.error)
       }
@@ -96,15 +107,24 @@ export function DateInvitation() {
           <Check className="size-8" aria-hidden="true" />
         </div>
         <h2 className="font-serif text-3xl font-semibold text-balance text-foreground">
-          C&apos;est un rendez-vous, {name} !
+          {isDeclined ? `Réponse enregistrée, ${name}` : `C'est un rendez-vous, ${name} !`}
         </h2>
-        <p className="mt-4 text-pretty leading-relaxed text-muted-foreground">
-          On se retrouve pour un(e) <span className="font-medium text-primary">{chosen.label.toLowerCase()}</span>
-        </p>
-        <p className="mt-1 text-pretty leading-relaxed text-muted-foreground">
-          le <span className="font-medium text-primary">{prettyDate}</span> à <span className="font-medium text-primary">{time}</span>.
-        </p>
-        <p className="mt-6 text-sm leading-relaxed text-muted-foreground">J&apos;ai déjà hâte d&apos;y être.</p>
+
+        {isDeclined ? (
+          <p className="mt-4 text-pretty leading-relaxed text-muted-foreground">
+            Message bien reçu ! Une prochaine fois peut-être.
+          </p>
+        ) : (
+          <>
+            <p className="mt-4 text-pretty leading-relaxed text-muted-foreground">
+              On se retrouve pour un(e) <span className="font-medium text-primary">{chosen.label.toLowerCase()}</span>
+            </p>
+            <p className="mt-1 text-pretty leading-relaxed text-muted-foreground">
+              le <span className="font-medium text-primary">{prettyDate}</span> à <span className="font-medium text-primary">{time}</span>.
+            </p>
+            <p className="mt-6 text-sm leading-relaxed text-muted-foreground">J&apos;ai déjà hâte d&apos;y être.</p>
+          </>
+        )}
 
         <div className="mt-6" aria-live="polite">
           {isPending ? (
@@ -115,7 +135,7 @@ export function DateInvitation() {
             </p>
           ) : (
             <p className="text-sm font-medium text-primary">
-              Un e-mail de confirmation a été envoyé.
+              Un e-mail de notification a été envoyé.
             </p>
           )}
         </div>
@@ -144,7 +164,7 @@ export function DateInvitation() {
           On se fait un date ?
         </h1>
         <p className="mx-auto mt-4 max-w-md text-pretty leading-relaxed text-muted-foreground">
-          Entre ton prénom, choisis l&apos;activité, la date et l&apos;heure qui te conviennent, je m&apos;occupe du reste.
+          Entre ton prénom, choisis l&apos;activité et la date qui te conviennent, je m&apos;occupe du reste.
         </p>
       </div>
 
@@ -205,46 +225,48 @@ export function DateInvitation() {
           </div>
         </fieldset>
 
-        {/* Sélection Date + Heure */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-6">
-          <div className="flex flex-col items-center gap-2">
-            <label htmlFor="date" className="text-sm font-medium text-foreground flex items-center gap-1.5">
-              <Calendar className="size-4 text-primary" aria-hidden="true" />
-              Quel jour ?
-            </label>
-            <input
-              type="date"
-              id="date"
-              name="date"
-              min={today}
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-              className="rounded-lg border border-input bg-card px-4 py-2.5 text-foreground outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-ring"
-            />
-          </div>
+        {/* Sélection Date + Heure (masquée si "Non merci") */}
+        {!isDeclined && (
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-6">
+            <div className="flex flex-col items-center gap-2">
+              <label htmlFor="date" className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                <Calendar className="size-4 text-primary" aria-hidden="true" />
+                Quel jour ?
+              </label>
+              <input
+                type="date"
+                id="date"
+                name="date"
+                min={today}
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                required={!isDeclined}
+                className="rounded-lg border border-input bg-card px-4 py-2.5 text-foreground outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-ring"
+              />
+            </div>
 
-          <div className="flex flex-col items-center gap-2">
-            <label htmlFor="time" className="text-sm font-medium text-foreground flex items-center gap-1.5">
-              <Clock className="size-4 text-primary" aria-hidden="true" />
-              À quelle heure ?
-            </label>
-            <input
-              type="time"
-              id="time"
-              name="time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              required
-              className="rounded-lg border border-input bg-card px-4 py-2.5 text-foreground outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-ring"
-            />
+            <div className="flex flex-col items-center gap-2">
+              <label htmlFor="time" className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                <Clock className="size-4 text-primary" aria-hidden="true" />
+                À quelle heure ?
+              </label>
+              <input
+                type="time"
+                id="time"
+                name="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                required={!isDeclined}
+                className="rounded-lg border border-input bg-card px-4 py-2.5 text-foreground outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-ring"
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="mt-10 flex justify-center">
           <button
             type="submit"
-            disabled={!name.trim() || !activity || !date || !time}
+            disabled={!isValid}
             className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-base font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Heart className="size-4 fill-current" aria-hidden="true" />

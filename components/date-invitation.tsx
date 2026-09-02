@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useMemo, useTransition } from "react"
-import { Film, UtensilsCrossed, Trees, Heart, Check, EyeOff, Target, Landmark, User } from "lucide-react"
+import { Film, UtensilsCrossed, Trees, Heart, Check, EyeOff, Target, Landmark, User, Clock, Calendar } from "lucide-react"
 import { sendConfirmation } from "@/app/actions/send-confirmation"
 
 type Activity = {
@@ -55,6 +55,7 @@ export function DateInvitation() {
   const [name, setName] = useState<string>("")
   const [activity, setActivity] = useState<string>("")
   const [date, setDate] = useState<string>("")
+  const [time, setTime] = useState<string>("19:30")
   const [submitted, setSubmitted] = useState(false)
   const [emailError, setEmailError] = useState<string>("")
   const [isPending, startTransition] = useTransition()
@@ -76,12 +77,12 @@ export function DateInvitation() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!name.trim() || !activity || !date) return
+    if (!name.trim() || !activity || !date || !time) return
     const label = ACTIVITIES.find((a) => a.id === activity)?.label ?? activity
     setEmailError("")
     setSubmitted(true)
     startTransition(async () => {
-      const result = await sendConfirmation(name.trim(), label, date)
+      const result = await sendConfirmation(name.trim(), label, date, time)
       if (!result.ok) {
         setEmailError(result.error)
       }
@@ -101,7 +102,7 @@ export function DateInvitation() {
           On se retrouve pour un(e) <span className="font-medium text-primary">{chosen.label.toLowerCase()}</span>
         </p>
         <p className="mt-1 text-pretty leading-relaxed text-muted-foreground">
-          le <span className="font-medium text-primary">{prettyDate}</span>.
+          le <span className="font-medium text-primary">{prettyDate}</span> à <span className="font-medium text-primary">{time}</span>.
         </p>
         <p className="mt-6 text-sm leading-relaxed text-muted-foreground">J&apos;ai déjà hâte d&apos;y être.</p>
 
@@ -143,7 +144,7 @@ export function DateInvitation() {
           On se fait un date ?
         </h1>
         <p className="mx-auto mt-4 max-w-md text-pretty leading-relaxed text-muted-foreground">
-          Entre ton prénom, choisis l&apos;activité et le jour qui te conviennent, je m&apos;occupe du reste.
+          Entre ton prénom, choisis l&apos;activité, la date et l&apos;heure qui te conviennent, je m&apos;occupe du reste.
         </p>
       </div>
 
@@ -204,26 +205,46 @@ export function DateInvitation() {
           </div>
         </fieldset>
 
-        <div className="mt-8 flex flex-col items-center gap-2">
-          <label htmlFor="date" className="text-sm font-medium text-foreground">
-            Quel jour te dirait ?
-          </label>
-          <input
-            type="date"
-            id="date"
-            name="date"
-            min={today}
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            required
-            className="rounded-lg border border-input bg-card px-4 py-2.5 text-foreground outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-ring"
-          />
+        {/* Sélection Date + Heure */}
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-6">
+          <div className="flex flex-col items-center gap-2">
+            <label htmlFor="date" className="text-sm font-medium text-foreground flex items-center gap-1.5">
+              <Calendar className="size-4 text-primary" aria-hidden="true" />
+              Quel jour ?
+            </label>
+            <input
+              type="date"
+              id="date"
+              name="date"
+              min={today}
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+              className="rounded-lg border border-input bg-card px-4 py-2.5 text-foreground outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-ring"
+            />
+          </div>
+
+          <div className="flex flex-col items-center gap-2">
+            <label htmlFor="time" className="text-sm font-medium text-foreground flex items-center gap-1.5">
+              <Clock className="size-4 text-primary" aria-hidden="true" />
+              À quelle heure ?
+            </label>
+            <input
+              type="time"
+              id="time"
+              name="time"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              required
+              className="rounded-lg border border-input bg-card px-4 py-2.5 text-foreground outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-ring"
+            />
+          </div>
         </div>
 
         <div className="mt-10 flex justify-center">
           <button
             type="submit"
-            disabled={!name.trim() || !activity || !date}
+            disabled={!name.trim() || !activity || !date || !time}
             className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-base font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Heart className="size-4 fill-current" aria-hidden="true" />

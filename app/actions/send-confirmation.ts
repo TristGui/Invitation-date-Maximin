@@ -4,16 +4,16 @@ import { Resend } from "resend"
 
 const RECIPIENTS = ["challax78@gmail.com"]
 const FROM = "Notre Date <onboarding@resend.dev>"
-
 type SendResult = { ok: true } | { ok: false; error: string }
 
 export async function sendConfirmation(
   userName: string,
   activityLabel: string,
   dateISO: string,
+  time: string,
 ): Promise<SendResult> {
-  if (!userName || !activityLabel || !dateISO) {
-    return { ok: false, error: "Nom, activité ou date manquante." }
+  if (!userName || !activityLabel || !dateISO || !time) {
+    return { ok: false, error: "Informations manquantes (nom, activité, date ou heure)." }
   }
 
   const apiKey = process.env.RESEND_API_KEY
@@ -40,8 +40,8 @@ export async function sendConfirmation(
         <p style="margin: 0 0 16px; font-size: 18px; font-weight: 600;">${userName}</p>
         <p style="margin: 0 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: #b06a78;">Activité</p>
         <p style="margin: 0 0 16px; font-size: 18px; font-weight: 600;">${activityLabel}</p>
-        <p style="margin: 0 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: #b06a78;">Date</p>
-        <p style="margin: 0; font-size: 18px; font-weight: 600; text-transform: capitalize;">${prettyDate}</p>
+        <p style="margin: 0 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: #b06a78;">Date & Heure</p>
+        <p style="margin: 0; font-size: 18px; font-weight: 600; text-transform: capitalize;">${prettyDate} à ${time}</p>
       </div>
       <p style="margin: 0; color: #8a5560;">Hâte d'y être. À très vite.</p>
     </div>

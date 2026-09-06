@@ -14,15 +14,15 @@ type Activity = {
 
 const ACTIVITIES: Activity[] = [
   {
-    id: "Bar",
-    label: "BAR",
-    description: "Une bonne biere, un cocktail, un verre de vin…",
+    id: "Cinema",
+    label: "Cinéma",
+    description: "Un bon film, main dans la main",
     icon: <Film className="size-7" aria-hidden="true" />,
   },
   {
-    id: "Musée",
-    label: "Un Musée",
-    description: "Flâner devant les œuvres, à deux",
+    id: "Baise",
+    label: "Une Baise",
+    description: "Direction le 7eme ciel !",
     icon: <Trees className="size-7" aria-hidden="true" />,
   },
   {
@@ -56,6 +56,7 @@ export function DateInvitation() {
   const [activity, setActivity] = useState<string>("")
   const [date, setDate] = useState<string>("")
   const [time, setTime] = useState<string>("19:30")
+  const [comment, setComment] = useState<string>("")
   const [submitted, setSubmitted] = useState(false)
   const [emailError, setEmailError] = useState<string>("")
   const [isPending, startTransition] = useTransition()
@@ -93,7 +94,7 @@ export function DateInvitation() {
     setEmailError("")
     setSubmitted(true)
     startTransition(async () => {
-      const result = await sendConfirmation(name.trim(), label, finalDate, finalTime)
+      const result = await sendConfirmation(name.trim(), label, finalDate, finalTime, comment.trim())
       if (!result.ok) {
         setEmailError(result.error)
       }
@@ -262,6 +263,7 @@ export function DateInvitation() {
             </div>
           </div>
         )}
+
         {/* Champ Commentaire facultatif */}
         <div className="mt-8 flex flex-col items-center gap-2">
           <label htmlFor="comment" className="text-sm font-medium text-foreground flex items-center gap-1.5">

@@ -14,9 +14,9 @@ type Activity = {
 
 const ACTIVITIES: Activity[] = [
   {
-    id: "Cinema",
-    label: "Cinéma",
-    description: "Un bon film, main dans la main",
+    id: "Bar",
+    label: "Bar",
+    description: "Une bonne bière ou un cocktail, un verre de vin ...",
     icon: <Film className="size-7" aria-hidden="true" />,
   },
   {

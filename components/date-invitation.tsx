@@ -16,7 +16,7 @@ const ACTIVITIES: Activity[] = [
   {
     id: "Bar",
     label: "Bar",
-    description: "Une bonne bière ou un cocktail, un verre de vin ...",
+    description: "Une bonne bière,un cocktail, un verre de vin ...",
     icon: <Film className="size-7" aria-hidden="true" />,
   },
   {

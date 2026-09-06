@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useMemo, useTransition } from "react"
-import { Film, UtensilsCrossed, Trees, Heart, Check, EyeOff, Target, Landmark, User, Clock, Calendar, XCircle } from "lucide-react"
+import { Film, UtensilsCrossed, Trees, Heart, Check, EyeOff, Target, Landmark, User, Clock, Calendar, XCircle, MessageSquare } from "lucide-react"
 import { sendConfirmation } from "@/app/actions/send-confirmation"
 
 type Activity = {
@@ -14,9 +14,9 @@ type Activity = {
 
 const ACTIVITIES: Activity[] = [
   {
-    id: "Cinema",
-    label: "Cinéma",
-    description: "Un bon film, main dans la main",
+    id: "Bar",
+    label: "BAR",
+    description: "Une bonne biere, un cocktail, un verre de vin…",
     icon: <Film className="size-7" aria-hidden="true" />,
   },
   {
@@ -262,6 +262,22 @@ export function DateInvitation() {
             </div>
           </div>
         )}
+        {/* Champ Commentaire facultatif */}
+        <div className="mt-8 flex flex-col items-center gap-2">
+          <label htmlFor="comment" className="text-sm font-medium text-foreground flex items-center gap-1.5">
+            <MessageSquare className="size-4 text-primary" aria-hidden="true" />
+            Un petit mot ou une précision ? <span className="text-xs text-muted-foreground">(facultatif)</span>
+          </label>
+          <textarea
+            id="comment"
+            name="comment"
+            rows={3}
+            placeholder="Ex: J'ai trop hâte ! / Des allergies particulières ? / Une idée de resto ?"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            className="w-full max-w-md rounded-lg border border-input bg-card p-3 text-sm text-foreground outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-ring resize-none"
+          />
+        </div>
 
         <div className="mt-10 flex justify-center">
           <button

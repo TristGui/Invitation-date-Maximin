@@ -4,6 +4,7 @@ import { Resend } from "resend"
 
 const RECIPIENTS = ["challax78@gmail.com"]
 const FROM = "Notre Date <onboarding@resend.dev>"
+
 type SendResult = { ok: true } | { ok: false; error: string }
 
 export async function sendConfirmation(
@@ -11,6 +12,7 @@ export async function sendConfirmation(
   activityLabel: string,
   dateISO: string,
   time: string,
+  comment?: string,
 ): Promise<SendResult> {
   if (!userName || !activityLabel) {
     return { ok: false, error: "Informations manquantes." }
@@ -26,12 +28,18 @@ export async function sendConfirmation(
 
   const isDeclined = activityLabel === "Non merci"
 
+  const commentHtml = comment ? `
+    <p style="margin: 16px 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: #b06a78;">Mot / Commentaire</p>
+    <p style="margin: 0; font-size: 15px; font-style: italic; color: #4a2530; background: #fff5f6; padding: 10px 14px; border-radius: 8px;">« ${comment} »</p>
+  ` : ""
+
   let detailsHtml = ""
   if (isDeclined) {
     detailsHtml = `
       <p style="margin: 0; font-size: 16px; color: #8a5560;">
         <strong>${userName}</strong> a décliné l'invitation pour le moment.
       </p>
+      ${commentHtml}
     `
   } else {
     const prettyDate = new Date(`${dateISO}T00:00:00`).toLocaleDateString("fr-FR", {
@@ -48,6 +56,7 @@ export async function sendConfirmation(
       <p style="margin: 0 0 16px; font-size: 18px; font-weight: 600;">${activityLabel}</p>
       <p style="margin: 0 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: #b06a78;">Date & Heure</p>
       <p style="margin: 0; font-size: 18px; font-weight: 600; text-transform: capitalize;">${prettyDate} à ${time}</p>
+      ${commentHtml}
     `
   }
 
